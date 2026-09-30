@@ -8,8 +8,8 @@ app.use(express.json());
 app.use(cors());
 
 // Menghubungkan ke Supabase menggunakan variabel Railway
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseUrl = 'sb_publishable_TcaPBW6aTox54wwJ0q2g0g_hLLUXplP';
+const supabaseKey = 'sb_secret_Iq5sVkvUL_PrEkbEvTX6YQ_CrTvzqac';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Rute tes untuk mengecek apakah server berjalan
