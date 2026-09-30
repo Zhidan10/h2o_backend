@@ -1,51 +1,42 @@
-const express = require('express');
-const cors = require('cors');
-const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
+const express = require('express');
+const { createClient } = require('@supabase/supabase-js');
+const cors = require('cors');
 
 const app = express();
-app.use(cors());
 app.use(express.json());
+app.use(cors());
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+// Menghubungkan ke Supabase menggunakan variabel Railway
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-// 1. Endpoint Login
+// Rute tes untuk mengecek apakah server berjalan
+app.get('/', (req, res) => {
+  res.send('Backend H2O Berjalan dengan Baik!');
+});
+
+// Rute untuk Login
 app.post('/api/login', async (req, res) => {
-    const { username, password } = req.body;
-    const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('username', username)
-        .eq('password', password)
-        .single();
+  const { username, password } = req.body;
+  
+  const { data, error } = await supabase
+    .from('zhidan')
+    .select('*')
+    .eq('username', username)
+    .eq('password', password)
+    .single();
 
-    if (error || !data) {
-        return res.json({ status: "error", message: "Username atau Password salah!" });
-    }
-    res.json({ status: "success", username: data.username, role: data.role, pt_akses: data.pt_akses });
+  if (error || !data) {
+    return res.status(401).json({ success: false, message: 'Username atau password salah!' });
+  }
+
+  res.json({ success: true, message: 'Login berhasil', user: data });
 });
 
-// 2. Endpoint Ambil Aset (Sesuai PT)
-app.get('/api/assets', async (req, res) => {
-    const { role, pt_akses } = req.query;
-    let query = supabase.from('assets').select('*');
-    if (role !== 'Admin') {
-        query = query.eq('pt_pemilik', pt_akses);
-    }
-    const { data, error } = await query;
-    if (error) return res.status(500).json({ status: "error", message: error.message });
-    res.json({ status: "success", data: data });
-});
-
-// 3. Endpoint Tambah Aset
-app.post('/api/assets', async (req, res) => {
-    const { nama_aset, kategori, pt_pemilik } = req.body;
-    const { data, error } = await supabase
-        .from('assets')
-        .insert([{ nama_aset, kategori, pt_pemilik }]);
-    if (error) return res.status(500).json({ status: "error", message: error.message });
-    res.json({ status: "success", message: "Aset berhasil ditambahkan!" });
-});
-
+// Menjalankan server sesuai port Railway
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server jalan di port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server berjalan di port ${PORT}`);
+});
